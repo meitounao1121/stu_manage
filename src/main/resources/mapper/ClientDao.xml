@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.stu_manage.dao.ClientDao">
+
+    <!--<resultMap type="com.example.stu_manage.entity.ClientEntity" id="clientResult">
+        &lt;!&ndash;
+        a.主键 id
+        b.非主键 result
+        &ndash;&gt;
+        <id property="clientId" column="client_Id"/>
+        <result property="clientName" column="client_Name"/>
+        <result property="clientSex" column="client_Sex"/>
+        <result property="clientPhone" column="client_Phone"/>
+        <result property="clientEmail" column="client_Email"/>
+        <result property="clientDetail" column="client_Detail" javaType="boolean" jdbcType="INTEGER"/>
+    </resultMap>-->
+  <!--  <select id="queryTest" resultType= "com.example.stu_manage.entity.ClientEntity">
+       select * from client where client_id = 1
+   </select>-->
+</mapper>

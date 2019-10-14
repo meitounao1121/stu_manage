@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../../layui/css/layui.css" media="all">
+    <style type="text/css">
+
+    </style>
+</head>
+<script src="../../layui/layui.js" charset="utf-8"></script>
+<script src="../../js/jquery-3.3.1.js"></script>
+<body>
+
+<fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+    <legend>个人信息修改</legend>
+</fieldset>
+<div class="layui-form-item" id="UserName">
+    <label class="layui-form-label">姓名</label>
+    <div class="layui-input-inline">
+        <input type="text" id="user_name" name="title" disabled="disabled" required lay-verify="required" autocomplete="off"
+             class="layui-input">
+    </div>
+</div>
+
+<div class="layui-form-item">
+    <label class="layui-form-label">电话</label>
+    <div class="layui-input-inline">
+        <input type="text" name="password" id="phone" required lay-verify="required" placeholder="请输入电话"
+               autocomplete="off" class="layui-input">
+    </div>
+</div>
+
+<div class="layui-form-item">
+    <label class="layui-form-label">邮箱</label>
+    <div class="layui-input-inline">
+        <input type="email" id="email" name="password" required lay-verify="required" placeholder="请输入邮箱"
+               autocomplete="off" class="layui-input">
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">地址</label>
+    <div class="layui-input-inline">
+        <input type="text" id="add" name="password" required lay-verify="required" placeholder="请输入地址"
+               autocomplete="off" class="layui-input">
+    </div>
+</div>
+
+
+<div class="layui-form-item">
+    <div class="layui-input-block">
+        <button class="layui-btn" id="update" lay-submit lay-filter="formDemo">立即提交</button>
+        <a href="/stu_manage/page/teacher/password.html" class="layui-btn" lay-submit lay-filter="formDemo">密码修改</a>
+        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+    </div>
+</div>
+<script type="text/javascript" src="../../layui/layui.js"></script>
+<script src="../../js/jquery-3.3.1.js"></script>
+<script type="text/javascript">
+    var token = sessionStorage.getItem("token");
+    /* 获取user信息l */
+    var userJsonStr = sessionStorage.getItem('user');
+    userEntity = JSON.parse(userJsonStr);
+
+    /* 点击提交，更新信息*/
+    $("#update").click(function () {
+        var phone = $("#phone").val();
+        var email = $("#email").val();
+        var add = $("#add").val();
+        $.ajax({
+            type: "PUT",
+            url: "/stu_manage/teacher/update",
+            headers: {token: token},
+            data: {id:userEntity.user.id, tea_phone: phone, tea_email: email, tea_address: add},
+            dataType: "text",
+            success: function (data) {
+                console.log(data)
+                layer.msg("信息修改成功!");
+            }
+        })
+    })
+
+    /*显示默认查找到的信息*/
+    $(function () {
+        $.ajax({
+            type: "GET",
+            url: "/stu_manage/teacher/queryMesById",
+            data: {id: userEntity.user.id},
+            headers: {token: token},
+            dataType: "json",
+            success: function (data) {
+                $("#user_name").val(data.tea_name);
+                $("#phone").val(data.tea_phone);
+                $("#email").val(data.tea_email);
+                $("#add").val(data.tea_address);
+            }
+        })
+    })
+
+
+    
+</script>
+</body>
+</html>

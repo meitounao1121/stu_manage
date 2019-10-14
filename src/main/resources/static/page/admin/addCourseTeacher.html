@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>选修课设置</title>
+    <link rel="stylesheet" href="../../layui/css/layui.css" media="all">
+    <script src="http://apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="http://apps.bdimg.com/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+    <style type="text/css">
+        body{
+            opacity: 0.8;
+        }
+      form{
+            margin-top:20px;
+        }
+        .layui-form-item{
+            width:220px;
+            display: inline-block;
+        }
+        .addCourse{
+            width:100px;
+        }
+        #div{
+            width: 100px;
+            height:100px;
+            background-color: black;
+            display:none;
+        }
+
+    </style>
+
+</head>
+<body>
+<form class="layui-form" action="">
+    <!--属性begin-->
+    <div class="layui-form-item">
+        <label class="layui-form-label">课程属性:</label>
+        <div class="layui-input-block">
+            <select id="major" lay-verify="required" lay-filter="major">
+                <option value="" selected>请选择</option>
+            </select>
+        </div>
+    </div>
+    <!--课程名称-->
+    <div class="layui-form-item">
+        <label class="layui-form-label">课程名称:</label>
+        <div class="layui-input-block">
+            <select id="course" lay-verify="required" lay-filter="course">
+
+            </select>
+        </div>
+    </div>
+    <!--老师名字 begin-->
+    <div class="layui-form-item">
+        <label class="layui-form-label">教师名称:</label>
+        <div class="layui-input-block">
+            <select id="teacher" lay-verify="required" lay-filter="teacher">
+                <option value="" selected></option>
+
+            </select>
+        </div>
+    </div>
+    <!--班级名称begin-->
+    <div class="layui-form-item">
+        <label class="layui-form-label">班级名称:</label>
+        <div class="layui-input-block">
+                <input type="text" id="className" name="class_name" required lay-verify="" placeholder="请输入名称" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <!--截止日期-->
+    <div class="layui-form-item">
+        <label class="layui-form-label">截止日期:</label>
+        <div class="layui-input-block">
+            <input type="text" id="day" name="deadline" required lay-verify="" placeholder="请输入时间" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <!--上课时间-->
+    <div class="layui-form-item">
+        <label class="layui-form-label">上课时间:</label>
+        <div class="layui-input-block">
+            <input type="text" id="courseTime" name="courseTime" required lay-verify="" placeholder="请输入时间" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <!--上课地点-->
+    <div class="layui-form-item">
+        <label class="layui-form-label">上课地点:</label>
+        <div class="layui-input-block">
+            <input type="text" id="coursePlace" name="coursePlace" required lay-verify="" placeholder="请输入地点" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <!--容纳人数-->
+    <div class="layui-form-item">
+        <label class="layui-form-label">容纳人数:</label>
+        <div class="layui-input-block">
+            <input type="text" id="adapt" name="adapt" required lay-verify="" placeholder="请输入人数" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item addCourse">
+        <div class="layui-input-block">
+            <button class="layui-btn" lay-submit lay-filter="information">立即添加</button>
+        </div>
+    </div>
+</form>
+
+
+
+<table id="courseTeacherClass" lay-filter="test"></table>
+
+</body>
+<div id="div"></div>
+<script type="text/javascript" src="../../layui/layui.js"></script>
+<script src="../../js/jquery-3.3.1.js"></script>
+<script type="text/javascript">
+
+    //日期
+    layui.use('laydate', function(){
+        var laydate = layui.laydate;
+
+        //选课截止日期
+        laydate.render({
+            elem: '#day',//指定元素
+            type: 'datetime'
+        });
+        //上课时间范围
+        laydate.render({
+            elem:'#courseTime',
+            type: 'time',
+            range: true,
+            format: 'HH:mm'
+        })
+    });
+
+        //给下拉列表添加事件
+        layui.use('form', function() {
+            var form = layui.form;
+            var token = sessionStorage.getItem("token");
+            //类别值页面加载响应
+            $.ajax({
+                url:"../../course/getmajor",
+                type:"get",
+                headers:{token:token},
+                dataType:"json",
+            success:function (data) {
+                var major= data.major;
+                for(var i =0;i<major.length;i++){
+                    var  str = "<option value='"+major[i].id+"'>"+major[i].major_name+"</option>";
+                    $("#major").append(str);
+                    renderForm();
+                }
+            }
+        })
+
+        //课程选中过后
+         form.on('select(course)', function (data) {
+            var teacher=$("#teacher");
+            //清空第二级里面的值
+            teacher.empty();
+            $.ajax({
+                url:"../../getTeacherNameAndId",
+                headers:{token:token},
+                type:"get",
+                dataType:"json",
+                success:function (data) {
+                     var data1 =  data.data;
+                    for(var i=0;i<data1.length;i++){
+                        var  str = "<option value='"+data1[i].id+"'>"+data1[i].tea_name+"</option>";
+                        $("#teacher").append(str);
+                    }
+                     renderForm();
+                },
+            });
+
+        })
+
+
+    //菜单响应 major选中过后
+        form.on('select(major)', function (data) {
+            var mid = data.value;
+            $.ajax({
+                url:"../../course/getCourseByMajorId",
+                headers:{token:token},
+                type:"get",
+                dataType:"json",
+                data:{"major_id":mid},
+                success:function (data) {
+                    var data1 =  data.data;
+                    for(var i=0;i<data1.length;i++){
+                        var  str = "<option value='"+data1[i].id+"'>"+data1[i].course_name+"</option>";
+                        $("#course").append(str);
+                    }
+                    renderForm();
+                },
+            });
+
+        })
+
+
+        //刷新重载var
+        function renderForm(){
+            layui.use('form', function(){
+                var form = layui.form;//高版本建议把括号去掉，有的低版本，需要加()
+                form.render();
+            });
+        }
+
+    //表单提交
+        form.on('submit(information)', function(info) {
+           var major_name =  $("#major  option:selected").text();
+           var major_id = $("#major  option:selected").val();
+
+           var course_name = $("#course option:selected").text();
+           var course_id = $("#course option:selected").val();
+
+           var teacher_name = $("#teacher option:selected").text();
+           var teacher_id = $("#teacher option:selected").val();
+
+           var className = $("#className").val();
+
+           var deadline = $("#day").val();
+
+           var course_time = $("#courseTime").val();
+
+           var course_place = $("#coursePlace").val();
+
+           var maxCount = $("#adapt").val();
+            var params = {"course_id":course_id,"tea_id":teacher_id,"course_class":className,"deadline":deadline,
+            "course_time":course_time,"course_place":course_place,"maxCount":maxCount};
+
+            console.log(JSON.stringify(params));
+
+            if(course_id!=""&&teacher_id!=""&&className!=""&deadline!=""&&course_time!=""&&course_place!=""&&maxCount!=""){
+                //提交请求
+                $.ajax({
+                    url:'../../addCourseTeacher',
+                    headers:{token:token},
+                    contentType:"application/json",
+                    type:"post",
+                    data:JSON.stringify(params),
+                    dataType:"json",
+                    success:function (data) {
+                        if(data.msg=="success"){
+                            layer.msg("提交成功");
+                        }else{
+                            layer.msg("提交失败");
+                        }
+                    },
+                    error:function () {
+                        layer.msg("请求失败,稍后重试");
+                    }
+
+                })
+            }else{
+                layer.msg("信息填写不全");
+            }
+
+
+        });
+        //
+
+
+    })
+
+    //table数据
+    layui.use('table', function(){
+        var table = layui.table;
+        var token = sessionStorage.getItem("token");
+        //第一个实例
+        table.render({
+            elem: '#courseTeacherClass'
+            ,height: '480'
+            ,url: '../../getCourseTeacherClass' //数据接口
+            ,headers:{token:token}
+            ,page: true //开启分页
+            ,cols: [[ //表头
+                {field: 'ct_id', title: '序号', width:60, sort: true, fixed: 'left'}
+                ,{field: 'mi_id', title: '属性号', width:80,sort: true}
+                ,{field: 'major_name', title: '属性名称', width:90}
+                ,{field: 'cid', title: '课号', width:60,sort: true}
+                ,{field: 'course_name', title: '课程名', width: 150}
+                ,{field: 'tid', title: '教师编号', width: 100, sort: true}
+                ,{field: 'tea_name', title: '教师名称', width: 100}
+                ,{field: 'course_class', title: '班级名称', width: 130,sort: true}
+                ,{field: 'course_time', title: '上课时间', width: 135, sort: true}
+                ,{field: 'course_place', title: '上课地点', width: 135, sort: true}
+                ,{field: 'deadline', title: '截止日期', width: 135,height:135, sort: true}
+                ,{field: '', title: '其他', width: 135, sort: true}
+            ]],
+        });
+
+    });
+</script>
+</html>

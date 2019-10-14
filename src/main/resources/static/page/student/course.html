@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>选课</title>
+    <link rel="stylesheet" href="../../layui/css/layui.css" media="all" />
+    <style type="text/css">
+        body{
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+<form class="layui-form">
+
+    <select lay-filter="formDemo" class="select" id="major" lay-verify="" lay-search>
+        <option value="0" selected>--请选择--</option>
+    </select>
+</form>
+    <table id="courseTable" lay-filter="test" class="layui-hide" width="100%" height="100%"></table>
+
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">选课</a>
+</script>
+
+<script  src="../../layui/layui.js"></script>
+<script src="../../js/jquery-1.8.3.js"></script>
+
+
+
+<script>
+
+    //Demo
+    layui.use('form', function() {
+        var form = layui.form;
+        var token = sessionStorage.getItem("token")
+        var userJsonStr = sessionStorage.getItem('user');
+        userEntity = JSON.parse(userJsonStr);
+        var uid = userEntity.user.id
+        $.ajax({
+            url: "../../course/getmajor",
+            type: "GET",
+            headers: {token:token},
+            dataType: "json",
+            success: function (data) {
+                var list = data.major
+                for(var j=0;j<list.length;j++) {
+                    var str = "<option value='"+list[j].id+"'>"+list[j].major_name+"</option>"
+                    $("#major").append(str);
+                    renderForm()
+                }
+            }
+        })
+
+        function renderForm(){
+            layui.use('form', function(){
+                var form = layui.form;//高版本建议把括号去掉，有的低版本，需要加()
+                form.render();
+            });
+        }
+        //监听提交
+        form.on('select(formDemo)', function(data) {
+            console.log(data.value)
+            var mid = data.value
+            layui.use('table', function () {
+                var table = layui.table;
+                var tableIns = table.render({
+                    elem: '#courseTable',
+                    url: '../../course/getCourseByMajor', //数据接口
+                    headers: {token: token},
+                    where: {"params": mid},
+                    page: true, //开启分页
+                    cols: [[ //表头
+                         {
+                            field: 'id', title: 'ID', width: 100, sort: true
+                        }, {
+                            field: 'major_name', title: '专业', width: 180
+                        }, {
+                            field: 'course_name', title: '课程', width: 180, sort: true
+                        }, {
+                            field: 'tea_name', title: '授课老师', width: 180, sort: true
+                        }, {
+                            field: 'course_class', title: '班级', width: 180, sort: true
+                        },{
+                            field: 'remain', title: '剩余人数', width: 180, sort: true
+                        },{
+                            field: 'deadline', title: '截止日期', width: 180, sort: true
+                        },{
+                            field: '', title: '选课', toolbar: '#barDemo', width: 135,edit:'text'
+                        }
+                    ]]
+                });
+                table.on('tool(test)', function(obj){ //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+                    var ctid = JSON.stringify(obj.data.id); //获得当前行数据
+                    var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                    var course_class = JSON.stringify(obj.data.course_class)
+
+                    if(layEvent === 'edit'){ //编辑
+                        $.ajax({
+                            url: "../../course/chooseCourse",
+                            type: "GET",
+                            headers: {token:token},
+                            dataType: "json",
+                            contentType: "application/json",
+                            data: {"ctid": ctid,"uid": uid,"course_class": course_class},
+                            success: function (data) {
+                                layer.msg(data.msg)
+                                setTimeout(function () {
+                                    tableIns.reload( {
+                                        url: '../../course/getCourseByMajor'
+                                        ,where: {"params": mid},//设定异步数据接口的额外参数
+                                        headers:{token:token},
+                                        page:{
+                                            curr:1
+                                        }
+                                    });
+                                },1500)
+                            }
+                        })
+                    }
+                });
+            })
+        })
+
+    });
+</script>
+</body>
+</html>

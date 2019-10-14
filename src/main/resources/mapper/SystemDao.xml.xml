@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.stu_manage.dao.SystemDao">
+   <!--根据role查询权限-->
+    <select id="getPermiss" parameterType="java.lang.Integer" resultType="com.example.stu_manage.dto.PermissionDto" >
+      select p.id,pid,permission_name,permission_url FROM `user` u
+      RIGHT JOIN user_role ur ON u.id = ur.user_id
+      RIGHT JOIN role_permission rp ON ur.role_id = rp.role_id
+      RIGHT JOIN permission p ON rp.permission_id = p.id
+      WHERE u.id = #{id}
+    </select>
+
+</mapper>

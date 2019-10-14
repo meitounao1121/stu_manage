@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="../../layui/css/layui.css">
+		<title>添加老师</title>
+		<style type="text/css">
+			body{
+				position: relative;
+				display: flex;
+				justify-content: space-around;
+				flex-direction: row;
+				flex-wrap: wrap;
+			}
+
+			.layui-form {
+				width: 500px;
+			}
+
+
+
+		</style>
+	</head>
+	<body>
+
+		<form class="layui-form" action="">
+			<fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+				<legend>单个添加信息</legend>
+			</fieldset>
+			<div class="layui-form-item">
+				<label class="layui-form-label">教师姓名:</label>
+				<div class="layui-input-inline">
+					<input type="text" name="tea_name" required lay-verify="required" placeholder="请输入名字" autocomplete="off" class="layui-input">
+				</div>
+				<div class="layui-form-mid layui-word-aux must">必填</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">年龄:</label>
+				<div class="layui-input-inline">
+					<input type="text" name="tea_age" required lay-verify="" placeholder="请输入年龄" autocomplete="off" class="layui-input">
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">选择性别:</label>
+				<div class="layui-input-block">
+					<input type="radio" name="tea_sex" value="男" title="男">
+					<input type="radio" name="tea_sex" value="女" title="女" checked>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">邮箱地址:</label>
+				<div class="layui-input-inline">
+					<input type="email" name="tea_email" required lay-verify="" placeholder="请输入邮箱" autocomplete="off" class="layui-input">
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">联系电话:</label>
+				<div class="layui-input-inline">
+					<input type="text" name="tea_phone" required lay-verify="" placeholder="请输入号码" autocomplete="off" class="layui-input">
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">联系地址:</label>
+				<div class="layui-input-inline">
+					<input type="text" name="tea_address" required lay-verify="" placeholder="请输入地址" autocomplete="off" class="layui-input">
+				</div>
+			</div>
+<
+			<div class="layui-form-item">
+				<div class="layui-input-block">
+					<button class="layui-btn" lay-submit lay-filter="information">立即提交</button>
+					<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+				</div>
+			</div>
+
+		</form>
+		<!--上传excel-->
+		<form class="layui-form layui-input-inline" enctype="multipart/form-data" id="choose">
+			<fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+				<legend>上传excel</legend>
+			</fieldset>
+
+			<div class="layui-form-item">
+				<div class="layui-input-block">
+					<input type="file" name="file" id="fileToUpload"><br>
+					<button class="layui-btn" lay-submit lay-filter="xlsDemo">提交xls</button>
+
+				</div>
+			</div>
+
+		</form>
+    
+      
+
+	</body>
+	<script src="../../layui/layui.js"></script>
+	<script src="../../js/jquery-3.3.1.js"></script>
+	<script type="text/javascript">
+
+		layui.use('form', function() {
+			var form = layui.form;
+			var token = sessionStorage.getItem("token");
+			//监听提交
+			form.on('submit(information)', function(info) {
+				layer.msg(JSON.stringify(info.field));
+				console.log(info.field);
+				//提交请求
+				$.ajax({
+					url:'../../addOneTeacher',
+					headers:{token:token},
+					contentType:"application/json",
+					type:"post",
+					data:JSON.stringify(info.field),
+					dataType:"json",
+					success:function (data) {
+						if(data.msg=="success"){
+							layer.msg("提交成功");
+						}else{
+							layer.msg("提交失败");
+						}
+					},
+					error:function () {
+						layer.msg("请求失败,稍后重试");
+					}
+
+				})
+
+				return false;
+			});
+
+			//上传excel
+			//xls提交监听
+			form.on('submit(xlsDemo)',function(info){
+				console.log(JSON.stringify(info.field));
+
+				var myForm = new FormData();
+
+				myForm.append('file',$('#fileToUpload')[0].files[0]);
+
+				console.log(myForm);
+
+
+				var params = JSON.stringify(info.field);
+				$.ajax ({
+					url:'/stu_manage/easypoi/teaimportExcel',
+					type:'post',
+					secureuri:false,
+					fileElementId:'fileToUpload',
+					headers:{token:token},
+					contentType: false,
+					processData: false,
+					async:false,
+					data:myForm,
+					dataType:'json',
+					success:function (data) {
+						layer.msg("上传成功");
+					},
+					error:function () {
+						layer.msg("请稍后重新上传");
+					}
+
+				})
+			})
+
+
+		});
+	</script>
+</html>

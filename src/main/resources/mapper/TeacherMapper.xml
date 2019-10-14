@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.stu_manage.dao.TeacherDao">
+    <!--查询所有老师信息-->
+<!--    <select id="getAllTeachers" resultType="com.example.stu_manage.dto.TeacherDto" >-->
+<!--       SELECT  t.id,u.user_name,u.password,t.tea_age,t.tea_email,t.tea_sex,t.tea_phone,t.tea_address-->
+<!--       FROM USER u,tea_info t,user_tea ut-->
+<!--       WHERE t.id = ut.tid-->
+<!--       AND ut.uid = u.id-->
+<!--    </select>-->
+    <!--根据输入值筛选老师-->
+    <select id="getSomeTeachers" resultType="com.example.stu_manage.dto.TeacherDto" parameterType="java.lang.String">
+        SELECT  t.id,u.user_name,u.password,t.tea_age,t.tea_email,t.tea_sex,t.tea_phone,t.tea_address
+       FROM  tea_info t LEFT JOIN user_tea ut ON ut.tid = t.id  LEFT JOIN USER u  ON ut.uid = u.id
+       WHERE  t.tea_age LIKE concat('%',concat(#{teacherInfo}),'%')
+       OR t.tea_sex LIKE concat('%',concat(#{teacherInfo}),'%')
+       OR t.tea_email LIKE concat('%',concat(#{teacherInfo}),'%')
+       OR t.tea_address LIKE concat('%',concat(#{teacherInfo}),'%')
+       OR t.tea_name LIKE concat('%',concat(#{teacherInfo}),'%')
+       OR t.tea_phone LIKE concat('%',concat(#{teacherInfo}),'%')
+       GROUP BY t.id
+    </select>
+    <!--新增一条老师的数据信息 返回id主键值-->
+    <insert id="addOneTeacher" keyProperty="id" useGeneratedKeys="true" parameterType="com.example.stu_manage.entity.TeacherEntity">
+        <selectKey resultType="Integer" keyProperty="id" order="AFTER">
+            select @@IDENTITY  as id;
+        </selectKey>
+        insert  into tea_info(tea_name, tea_sex, tea_phone, tea_email, tea_address)
+        values(#{tea_name},#{tea_sex},#{tea_phone},#{tea_email},#{tea_address})
+    </insert>
+
+</mapper>

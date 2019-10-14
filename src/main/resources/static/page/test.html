@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../js/jquery-3.3.1.js"></script>
+</head>
+<body>
+<div id="ett">
+
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function(){
+        alert(2333333)
+        $.ajax({
+            url: '../client/test',
+            type: 'get',
+            dataType: 'json',
+            contentType: "application/json,charset=utf-8",
+            success: function (data) {
+                $('#ett').text(JSON.stringify(data))
+            }
+        })
+    })
+
+</script>
+
+
+</body>
+</html>

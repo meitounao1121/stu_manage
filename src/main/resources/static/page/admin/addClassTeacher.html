@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>班主任设置</title>
+    <link rel="stylesheet" href="../../layui/css/layui.css" media="all">
+    <script src="http://apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="http://apps.bdimg.com/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+    <style type="text/css">
+        body{
+            opacity: 0.8;
+        }
+        form{
+            margin-top:20px;
+        }
+        .layui-form-item{
+            width:250px;
+            display: inline-block;
+        }
+
+    </style>
+
+</head>
+<body>
+<form class="layui-form" action="">
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">班级名称:</label>
+        <div class="layui-input-block">
+            <select id="classOne" lay-verify="required" lay-filter="classOne">
+                <option value="" selected></option>
+            </select>
+        </div>
+    </div>
+    <!--老师名字 begin-->
+    <div class="layui-form-item">
+        <label class="layui-form-label">教师名称:</label>
+        <div class="layui-input-block">
+            <select id="teacher" lay-verify="required" lay-filter="teacher">
+                <option value="" selected></option>
+
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item addCourse">
+        <div class="layui-input-block">
+            <button class="layui-btn" lay-submit lay-filter="information">立即分配</button>
+        </div>
+    </div>
+</form>
+
+
+
+<table id="courseTeacherClass" lay-filter="test"></table>
+
+</body>
+<div id="div"></div>
+<script type="text/javascript" src="../../layui/layui.js"></script>
+<script src="../../js/jquery-3.3.1.js"></script>
+<script src="../../layui/layui.js"></script>
+<script type="text/javascript">
+
+
+    //给下拉列表添加事件
+    layui.use('form', function() {
+        var form = layui.form;
+        var token = sessionStorage.getItem("token");
+        //类别值页面加载响应
+        $.ajax({
+            url:"../../class/getClassWithNoTeacher",
+            type:"get",
+            headers:{token:token},
+            dataType:"json",
+            success:function (data) {
+                var data= data.data;
+                for(var i =0;i<data.length;i++){
+                    var  str = "<option value='"+data[i].id+"'>"+data[i].class_name+"</option>";
+                    $("#classOne").append(str);
+                    renderForm();
+                }
+            }
+        })
+
+        //班级选中过后 此为没有班主任的班级
+        form.on('select(classOne)', function (info) {
+            var teacher=$("#teacher");
+            //清空第二级里面的值
+            teacher.empty();
+            $.ajax({
+                url:"../../getTeacherNameAndId",
+                headers:{token:token},
+                type:"get",
+                dataType:"json",
+                success:function (data) {
+                    var data1 =  data.data;
+                    for(var i=0;i<data1.length;i++){
+                        var  str = "<option value='"+data1[i].id+"'>"+data1[i].tea_name+"</option>";
+                        $("#teacher").append(str);
+                    }
+                    renderForm();
+                },
+            });
+
+        })
+
+
+
+        //刷新重载var
+        function renderForm(){
+            layui.use('form', function(){
+                var form = layui.form;//高版本建议把括号去掉，有的低版本，需要加()
+                form.render();
+            });
+        }
+
+        //表单提交
+        form.on('submit(information)', function(info) {
+            var class_name =  $("#classOne  option:selected").text();
+            var class_id = $("#classOne  option:selected").val();
+
+
+
+            var teacher_name = $("#teacher option:selected").text();
+            var teacher_id = $("#teacher option:selected").val();
+
+            var params = {"class_id":class_id,"tea_id":teacher_id};
+
+            console.log(JSON.stringify(params));
+
+            if(class_id!=""&&teacher_id!=""&&class_name!=""){
+                //提交请求
+                $.ajax({
+                    url:'../../class/addClassTeacher',
+                    headers:{token:token},
+                    contentType:"application/json",
+                    type:"post",
+                    data:JSON.stringify(params),
+                    dataType:"json",
+                    success:function (data) {
+                        if(data.msg=="success"){
+                            layer.msg("提交成功");
+                        }else{
+                            layer.msg("提交失败");
+                        }
+                    },
+                    error:function () {
+                        layer.msg("请求失败,稍后重试");
+                    }
+
+                })
+            }else{
+                layer.msg("信息填写不全");
+            }
+
+
+        });
+
+
+
+    })
+
+    //table数据
+    layui.use('table', function(){
+        var table = layui.table;
+        var token = sessionStorage.getItem("token");
+        //第一个实例
+        table.render({
+            elem: '#courseTeacherClass'
+
+            ,url: '../../class/getClassTeacher' //数据接口
+            ,headers:{token:token}
+            ,page: true //开启分页
+            ,cols: [[ //表头
+                {field: 'cid', title: '班级序号', width:100, sort: true, fixed: 'left'}
+                ,{field: 'class_name', title: '班级名称', width:120,sort: true}
+                ,{field: 'tid', title: '教师编号', width: 100, sort: true}
+                ,{field: 'tea_name', title: '教师名称', width: 120}
+                ,{field: 'classQ', title: '班级人数', width: 120, sort: true}
+                ,{field: '', title: '其他', width: 135, sort: true}
+            ]]
+        });
+
+    });
+</script>
+</html>

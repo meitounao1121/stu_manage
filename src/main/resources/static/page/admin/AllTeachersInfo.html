@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>教师信息管理</title>
+		<link rel="stylesheet" href="../../layui/css/layui.css" media="all">
+		 <script src="http://apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
+		<script src="http://apps.bdimg.com/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+		<style type="text/css">
+			body{
+				opacity: 0.8;
+
+			}
+		</style>
+	</head>
+	<body>
+
+	<div class="top">
+		关键字：
+		<div class="layui-inline">
+			<input class="layui-input" name="id" id="key" autocomplete="off" placeholder="请输入关键字">
+		</div>
+		<button class="layui-btn" data-type="reload" id="search">搜索</button>
+	</div>
+
+	<table id="teacherTable" lay-filter="test"></table>
+
+		
+	</body>
+	<script type="text/javascript" src="../../layui/layui.js"></script>
+	<script src="../../js/jquery-3.3.1.js"></script>
+
+	<script type="text/html" id="barDemo">
+
+		<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+	</script>
+	<script type="text/javascript">
+
+
+		//教师信息
+		layui.use('table', function() {
+			var table = layui.table;
+			var token = sessionStorage.getItem("token");
+			//第一个实例
+			var tableIns = table.render({
+				elem: '#teacherTable',
+				url: '../../getAllTeachers', //数据接口
+				headers:{token:token},
+				page: true, //开启分页
+				cols: [[ //表头
+					{	type:'checkbox'
+					}, {
+						field: 'id',title: 'ID',width: 80,sort: true
+					}, {
+						field: 'user_name',title: '姓名',width: 80
+					}, {
+						field: 'tea_sex',title: '性别',width: 80,sort: true
+					}, {
+						field: 'tea_age',title: '年龄',width: 80,sort: true
+					}, {
+						field: 'tea_phone',title: '电话号码',width: 177,edit: 'text'
+					}, {
+						field: 'tea_email',title: '邮箱地址',width: 177,sort: true,edit: 'text'
+					}, {
+						field: 'tea_address',title: '联系地址',width: 177,edit: 'text'
+					}, {
+						field:'password',title:'密码',width:177,edit:'text'
+					}, {
+						field:'',title:'操作',toolbar: '#barDemo',width:135,edit:'text'
+					}
+				]]
+			});
+
+
+
+		
+		//查询老师信息
+		$(".top .layui-btn").on('click',function() {
+			//获得输入框的信息
+			var info = $("#key").val();
+				//表数据
+				tableIns.reload( {
+					url: '../../getSomeTeachers'
+					,where: {"teacherInfo": info},//设定异步数据接口的额外参数
+					headers:{token:token},
+					page:{
+						curr:1
+					}
+				});
+
+		})
+
+		//监听单元格编辑密码
+			table.on('edit(test)', function(obj){
+				var value = obj.value //得到修改后的值
+						,udata= obj.data //得到所在行所有键值
+						,field = obj.field; //得到字段
+				var params = {id:udata.id,password:value+""};
+				$.ajax({
+					url:"../../editPassword",
+					type:"put",
+					contentType:"application/json",
+					headers:{token:token},
+					data:JSON.stringify(params),
+					dataType:"json",
+					success:function (data) {
+						console.log(data);
+						layer.msg('[ID: '+ udata.id +'] ' + field + ' 字段更改为：'+ value);
+					},
+					error:function () {
+						layer.msg('修改失败！');
+					}
+
+				})
+
+			});
+
+
+
+			//信息操作监听工具条
+			table.on('tool(test)', function(obj){ //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+				var data = obj.data; //获得当前行数据
+				var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+				var tr = obj.tr; //获得当前行 tr 的DOM对象
+
+				if(layEvent === 'detail'){ //查看
+					//do something
+					layer.open({
+						type:1,
+						content:$('#test')
+					})
+				} else if(layEvent === 'del'){ //删除
+					layer.confirm('真的删除行么', function(index){
+						obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+						layer.close(index);
+						//向服务端发送删除指令
+					});
+				}
+			});
+	
+		});
+
+
+
+
+
+
+	</script>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="multipart/form-data; charset=utf-8" />
+    <link rel="stylesheet" href="../../layui/css/layui.css">
+    <title>添加学生</title>
+    <style type="text/css">
+        body{
+            position: relative;
+            display: flex;
+            justify-content: space-around;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+        .layui-form {
+            width: 500px;
+        }
+
+    </style>
+</head>
+<body>
+
+<form class="layui-form layui-input-inline" action="" id="topForm">
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+        <legend>单个添加信息</legend>
+    </fieldset>
+    <div class="layui-form-item">
+        <label class="layui-form-label">学生姓名:</label>
+        <div class="layui-input-inline">
+            <input type="text" name="stu_name" required lay-verify="required" placeholder="请输入名字" autocomplete="off"
+                   class="layui-input">
+        </div>
+        <div class="layui-form-mid layui-word-aux must">必填</div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">年龄:</label>
+        <div class="layui-input-inline">
+            <input type="text" name="stu_age" required lay-verify="" placeholder="请输入年龄" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">选择性别:</label>
+        <div class="layui-input-block">
+            <input type="radio" name="stu_sex" value="男" title="男">
+            <input type="radio" name="stu_sex" value="女" title="女" checked>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">联系电话:</label>
+        <div class="layui-input-inline">
+            <input type="text" name="stu_phone" required lay-verify="" placeholder="请输入电话号码" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">邮箱地址:</label>
+        <div class="layui-input-inline">
+            <input type="email" name="stu_mail" required lay-verify="" placeholder="请输入邮箱" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">家庭地址:</label>
+        <div class="layui-input-inline">
+            <input type="text" name="stu_address" required lay-verify="" placeholder="请输入地址" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">学生班级:</label>
+        <div class="layui-input-inline">
+            <select id="class1" name="class_id" lay-verify="required" lay-filter="class1" >
+                <option value="" selected>请选择</option>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+        </div>
+    </div>
+
+</form>
+
+<form class="layui-form layui-input-inline" enctype="multipart/form-data" id="choose">
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+        <legend>上传excel</legend>
+    </fieldset>
+    <!--学生班级-->
+    <div class="layui-form-item">
+        <label class="layui-form-label">学生班级:</label>
+        <div class="layui-input-inline">
+            <select id="class2" name="class_id" lay-verify="required" lay-filter="class2" >
+                <option value="" selected>请选择</option>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <input type="file" name="file" id="fileToUpload"><br>
+            <button class="layui-btn" lay-submit lay-filter="xlsDemo">提交xls</button>
+        </div>
+    </div>
+
+</form>
+
+
+
+</body>
+<script src="../../layui/layui.js"></script>
+<script src="../../js/jquery-3.3.1.js"></script>
+<script type="text/javascript">
+
+
+
+
+    //
+    layui.use('form', function () {
+        var form = layui.form;
+        var token = sessionStorage.getItem("token");
+
+        //显示班级下拉框
+        console.log(token);
+        $.ajax({
+            url: '/stu_manage/class/getAllClass',
+            headers: {token: token},
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var cl = data.data;
+                for(var i = 0;i < cl.length; i++) {
+                    var str = "<option value='"+ cl[i].id+"'>" + cl[i].class_name + "</option>";
+                    $("#class1").append(str);
+                    form.render();
+                }
+            },
+            error: function () {
+
+            }
+        });
+
+        //上传班级学生信息的班级下拉框
+        $.ajax({
+            url: '/stu_manage/class/getAllClass',
+            headers: {token: token},
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var cl = data.data;
+                for(var i = 0;i < cl.length; i++) {
+                    var str = "<option value='"+ cl[i].id+"'>" + cl[i].class_name + "</option>";
+                    $("#class2").append(str);
+                    form.render();
+                }
+            },
+            error: function () {
+
+            }
+        });
+
+        //xls提交监听
+        form.on('submit(xlsDemo)',function(info){
+            console.log(JSON.stringify(info.field));
+
+            var myForm = new FormData();
+
+            myForm.append('file',$('#fileToUpload')[0].files[0]);
+
+            myForm.append('params',$('#class2').val());
+
+            console.log(myForm);
+
+
+          var params = JSON.stringify(info.field);
+            $.ajax ({
+                url:'/stu_manage/easypoi/stuimportExcel',
+                type:'post',
+                secureuri:false,
+                fileElementId:'fileToUpload',
+                headers:{token:token},
+                contentType: false,
+                processData: false,
+                async:false,
+                data:myForm,
+                dataType:'json',
+                success:function (data) {
+                    layer.msg("上传成功");
+                },
+                error:function () {
+                    layer.msg("请稍后重新上传");
+                }
+
+            })
+        })
+
+
+
+        //监听提交
+        form.on('submit(formDemo)', function (info) {
+             console.log(info.field);
+            //提交请求
+            $.ajax({
+                url: '/stu_manage/student/addOneStudent',
+                headers: {token: token},
+                type: "post",
+                data: JSON.stringify(info.field),
+                contentType: "application/json",
+                dataType: "json",
+                success: function (data) {
+                    if (data.msg == "success") {
+                        layer.msg("提交成功");
+                    } else {
+                        layer.msg("提交失败");
+                    }
+                },
+                error: function () {
+                    layer.msg("请求失败,稍后重试");
+                }
+
+            })
+
+        });
+
+
+
+    });
+
+
+
+
+</script>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>后台</title>
+    <link rel="stylesheet" href="../layui/css/layui.css">
+    <script src="http://apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="http://apps.bdimg.com/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+</head>
+<body class="layui-layout-body">
+
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo">高校信息化管理系统</div>
+        <!-- 头部区域（可配合layui已有的水平导航） -->
+        <ul class="layui-nav layui-layout-left">
+            <li class="layui-nav-item"><a href="main.html">主页</a></li>
+            <li class="layui-nav-item">
+                <a href="javascript:;">消息管理</a>
+                <dl class="layui-nav-child">
+                    <dd><a href="">邮件管理</a></dd>
+                    <dd><a href="">消息管理</a></dd>
+                </dl>
+            </li>
+        </ul>
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <img src="http://t.cn/RCzsdCq" class="layui-nav-img">
+            </li>
+            <li class="layui-nav-item" id="userNmae">
+
+            </li>
+            <li class="layui-nav-item"><a href="login.html">登出</a></li>
+        </ul>
+    </div>
+
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+            <ul class="layui-nav layui-nav-tree"  lay-filter="test" id="menu_nav">
+            </ul>
+        </div>
+    </div>
+
+    <div class="layui-body" style="background-image: url(../img/0.gif);background-size: 100%">
+        <!-- 内容主体区域 -->
+        <iframe id="iframeMain" src="" style="width: 100%; height: 100%;"></iframe>
+
+    </div>
+
+    <div class="layui-footer">
+        <!-- 底部固定区域 -->
+        Copyright © 2019 - 知了堂18班第五组
+    </div>
+</div>
+<script src="../layui/layui.js"></script>
+
+<script type="text/javascript">
+
+    layui.use('element', function() {
+        var element = layui.element;
+
+
+        //JavaScript代码区域
+        $(document).ready(function () {
+            var userJsonStr = sessionStorage.getItem('user');
+            userEntity = JSON.parse(userJsonStr);
+            var uname = userEntity.user.user_name;
+            var permiJsonStr = JSON.parse(sessionStorage.getItem('per'));
+            var auth = permiJsonStr.perArr;
+            console.log(auth);
+            $("#userNmae").text(uname);
+            var token = sessionStorage.getItem("token");
+            console.log(token);
+            //权限菜单加载
+            var menu = ""; //定义变量存储
+            for (var i = 0; i < auth.length; i++) {
+                menu += "<li class='layui-nav-item '>"
+                if (auth[i].pid == 0) { //取出父元素的菜单，拼进页面
+                    menu += "<a href='javascript:;'>" + auth[i].permission_name + "</a>"
+                    for (var j = 0; j < auth.length; j++) { //继续遍历这几条数据
+                        if (auth[j].pid == auth[i].id) { //取出这个父元素所对应的子元素
+                            menu += "<dl class='layui-nav-child'>"
+                            menu += "<dd>"
+                            menu += "<a href='" + auth[j].permission_url + "' target='option'>" + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + auth[j].permission_name + "</a>"
+                            menu += "</dd>"
+                            menu += "</dl>"
+                        }
+                    }
+                }
+                menu += "</li>";
+            }
+            $("#menu_nav").html(menu);
+             var element = layui.element;
+             element.init()//初始化element事件，使菜单展开
+
+            //页面嵌套
+            $("dd>a").click(function (e) {
+                console.log(123123);
+                e.preventDefault();
+                $("#iframeMain").attr("src", $(this).attr("href"));
+            })
+
+        })
+    })
+</script>
+</body>
+</html>

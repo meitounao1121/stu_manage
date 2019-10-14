@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../../layui/css/layui.css" media="all">
+    <style type="text/css">
+        body{
+            opacity: 0.8;
+        }
+        #AndStudent{
+            display: none;
+        }
+        /*#StudentScore{*/
+        /*    display: none;*/
+        /*}*/
+    </style>
+</head>
+<body>
+<table id="courseTable" lay-filter="courseTable"></table>
+<div id="AndStudent">
+    <table id="classAndStudent" lay-filter="classAndStudent"></table>
+</div>
+<!--<div id="StudentScore">-->
+<!--    <table id="StudentAllScoreDetail" lay-filter="AllScore"></table>-->
+<!--</div>-->
+</body>
+
+<script type="text/javascript" src="../../layui/layui.js"></script>
+<script src="../../js/jquery-3.3.1.js"></script>
+<script type="text/html" id="barDemo">
+
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="detail">查看</a>
+</script>
+<script type="text/javascript">
+
+    //班级信息
+    layui.use('table', function() {
+        var table = layui.table;
+        var token = sessionStorage.getItem("token");
+        var userJsonStr = sessionStorage.getItem('user');
+        userEntity = JSON.parse(userJsonStr);
+        var id = userEntity.user.id;
+        //班主任管理的所有班级
+        var tableIns = table.render({
+            elem: '#courseTable',
+            url: '../../course/getCourseStudent', //数据接口
+            height:'600',
+            headers:{token:token},
+            page: true, //开启分页
+            where:{"uid":id},
+            cols: [[ //表头
+                {	type:'checkbox'
+                },{
+                    field: 'ctid',title: '编号',width: 80,sort: true
+                }, {
+                    field: 'major_name',title: '属性',width: 120
+                }, {
+                    field: 'course_name',title: '课程名称',width: 120
+                },{
+                    field: 'course_class',title: '课程班级',width: 120
+                }, {
+                    field: 'q',title: '班级人数',width: 100,sort: true
+                }, {
+                    fixed: '',title: '操作',width: 120,toolbar: '#barDemo'
+                }
+            ]]
+        });
+
+
+        //信息操作监听工具条
+        table.on('tool(courseTable)', function(obj){ //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            var tr = obj.tr; //获得当前行 tr 的DOM对象
+
+            console.log("yyy");
+            if(layEvent === 'detail') { //查看
+                var data = obj.data;
+
+                //班级表格数据
+                var student = table.render({
+                    elem: '#classAndStudent',
+                    url: '../../course/getCourseStudentScore', //数据接口
+                    height: '600',
+                    headers: {token: token},
+                    page: false, //开启分页
+                    where: {"ctid": data.ctid},
+                    cols: [[ //表头
+                        {
+                            type: 'checkbox'
+                        }, {
+                            field: 'ctid', title: '编号', width: 80, sort: true
+                        }, {
+                            field: 'course_name', title: '课程名', width: 120
+                        }, {
+                            field: 'course_class', title: '班级名称', width: 120
+                        }, {
+                            field: 'sid', title: '学号', width: 80, sort: true
+                        }, {
+                            field: 'stu_name', title: '学生姓名', width: 100,
+                        }, {
+                            field: 'score', title: '分数', width: 80,edit:'text'
+                        }, {
+                            fixed: '', title: '操作', width: 100, toolbar: '#barDemo'
+                        }
+                    ]],
+                    done:function () {
+                        //弹出层打开
+                        layer.open({
+                            type: 1
+                            ,title: '班级学生'
+                            ,shade: 0.5
+                            ,zIndex:1
+                            ,resize:true
+                            ,maxmin:true
+                            ,tipsMore: true
+                            ,area: ['600px', '400px']
+                            ,content: $('#AndStudent')
+
+                        })
+
+                    }
+
+                });
+
+
+            };
+
+        });
+
+        //编辑分数
+        table.on('edit(classAndStudent)', function(obj){
+            var value = obj.value //得到修改后的值
+                ,udata= obj.data //得到所在行所有键值
+                ,field = obj.field; //得到字段
+            var params = {stu_id:udata.sid,score:value+"",course_tea_id:udata.ctid};
+            $.ajax({
+                url:"../../client/editscore",
+                type:"put",
+                contentType:"application/json",
+                headers:{token:token},
+                data:JSON.stringify(params),
+                dataType:"json",
+                success:function (data) {
+                    console.log(data);
+                    layer.msg("修改成功");
+                },
+                error:function () {
+                    layer.msg('修改失败！');
+                }
+
+            })
+
+        });
+
+    });
+
+</script>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>学生信息管理</title>
+    <link rel="stylesheet" href="../../layui/css/layui.css" media="all">
+    <script src="http://apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="http://apps.bdimg.com/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+    <style type="text/css">
+        body{
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+<table id="courseTable" lay-filter="test" width="100%" height="100%"></table>
+</body>
+<script src="../../layui/lay/modules/layer.js"></script>
+<script src="../../layui/layui.js"></script>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">查看课程</a>
+</script>
+
+
+<script>
+    //选课信息
+    layui.use('table', function () {
+        var table = layui.table;
+        var token = sessionStorage.getItem("token");
+        var userJsonStr = sessionStorage.getItem('user');
+        userEntity = JSON.parse(userJsonStr);
+        var uid = userEntity.user.id;
+        var tableIns = table.render({
+            elem: '#courseTable',
+            url: '../../client/getcourse', //数据接口
+            headers: {token: token},
+            where: {"params": uid},
+            page: true, //开启分页
+            cols: [[ //表头
+                {
+                    field: 'id', title: 'ID', width: 80, sort: true
+                }, {
+                    field: 'major_name', title: '专业类别', width: 180
+                }, {
+                    field: 'course_name', title: '课程名', width: 180, sort: true
+                }, {
+                    field: 'course_class', title: '班级', width: 141, edit: 'text'
+                }, {
+                    field: 'course_time', title: '上课时间', width: 141, edit: 'text'
+                }, {
+                    field: 'course_place', title: '上课地点', width: 141, edit: 'text'
+                }
+            ]]
+        });
+        // table.on('tool(test)', function(obj){ //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+        //     var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+        //     if(layEvent === 'edit'){ //编辑
+        //         window.location.href="checkstuscore.html"
+        //     }
+        // });
+    });
+</script>
+
+</html>
